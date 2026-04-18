@@ -1,123 +1,457 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const PamphletApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PamphletApp extends StatelessWidget {
+  const PamphletApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Oasis Retreat Pamphlet',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2C5E50),
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold),
+          headlineMedium: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold),
+        ),
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
-      },
+      home: const PamphletHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class PamphletHomePage extends StatefulWidget {
+  const PamphletHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<PamphletHomePage> createState() => _PamphletHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _PamphletHomePageState extends State<PamphletHomePage> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            children: const [
+              CoverPage(),
+              AboutPage(),
+              HighlightsPage(),
+              ContactPage(),
+            ],
+          ),
+          // Page Indicator
+          Positioned(
+            bottom: 32,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                4,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 8,
+                  width: _currentPage == index ? 24 : 8,
+                  decoration: BoxDecoration(
+                    color: _currentPage == index
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.white.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 2,
+                        offset: Offset(0, 1),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Navigation Arrows
+          if (_currentPage < 3)
+            Positioned(
+              right: 16,
+              bottom: 20,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                ),
+                onPressed: () {
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              ),
+            ),
+          if (_currentPage > 0)
+            Positioned(
+              left: 16,
+              bottom: 20,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                ),
+                onPressed: () {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              ),
+            ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+    );
+  }
+}
+
+class CoverPage extends StatelessWidget {
+  const CoverPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: NetworkImage(
+            'https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=2000&auto=format&fit=crop',
+          ),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withOpacity(0.2),
+              Colors.black.withOpacity(0.7),
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Text(
+                'OASIS\nRETREAT',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: Colors.white,
+                      letterSpacing: 8,
+                      height: 1.2,
+                    ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Discover your perfect escape in the heart of nature.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w300,
+                    ),
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'SWIPE TO OPEN',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      letterSpacing: 2,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white.withOpacity(0.8),
+                    size: 16,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 48),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AboutPage extends StatelessWidget {
+  const AboutPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF9F7F1),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              Text(
+                'Welcome to',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      letterSpacing: 2,
+                    ),
+              ),
+              Text(
+                'Paradise',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: const Color(0xFF2C5E50),
+                    ),
+              ),
+              const SizedBox(height: 32),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1200&auto=format&fit=crop',
+                  height: 250,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Nestled away from the noise of the city, Oasis Retreat offers an unparalleled experience of tranquility and luxury. Our sanctuary is designed to help you reconnect with nature and rejuvenate your spirit.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      height: 1.6,
+                      color: Colors.black87,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'From world-class dining to bespoke wellness programs, every detail is crafted to ensure your stay is nothing short of magical.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      height: 1.6,
+                      color: Colors.black87,
+                    ),
+              ),
+              const SizedBox(height: 80), // Space for bottom indicators
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HighlightsPage extends StatelessWidget {
+  const HighlightsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text('$_counter', style: Theme.of(context).textTheme.headlineMedium),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(32, 48, 32, 24),
+              child: Text(
+                'Experiences',
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      color: const Color(0xFF2C5E50),
+                    ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  _buildHighlightCard(
+                    context,
+                    'Tranquil Spa',
+                    'Holistic treatments to restore your balance.',
+                    'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=800&auto=format&fit=crop',
+                  ),
+                  _buildHighlightCard(
+                    context,
+                    'Fine Dining',
+                    'Locally sourced ingredients, crafted by master chefs.',
+                    'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?q=80&w=800&auto=format&fit=crop',
+                  ),
+                  _buildHighlightCard(
+                    context,
+                    'Nature Trails',
+                    'Explore miles of pristine wilderness.',
+                    'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=800&auto=format&fit=crop',
+                  ),
+                  const SizedBox(height: 80), // Space for bottom indicators
+                ],
+              ),
+            ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget _buildHighlightCard(BuildContext context, String title, String subtitle, String imageUrl) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 24),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      shadowColor: Colors.black12,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.network(
+            imageUrl,
+            height: 160,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2C5E50),
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.black54,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ContactPage extends StatelessWidget {
+  const ContactPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF2C5E50),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Spacer(),
+              Icon(
+                Icons.wb_sunny_outlined,
+                size: 64,
+                color: Colors.white.withOpacity(0.9),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Plan Your\nVisit',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      height: 1.2,
+                    ),
+              ),
+              const SizedBox(height: 48),
+              _buildContactRow(Icons.location_on, '123 Serenity Lane, Mountain View'),
+              const SizedBox(height: 16),
+              _buildContactRow(Icons.phone, '+1 (555) 123-4567'),
+              const SizedBox(height: 16),
+              _buildContactRow(Icons.email, 'reservations@oasisretreat.example.com'),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF2C5E50),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'BOOK YOUR STAY',
+                  style: TextStyle(
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 48),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white70, size: 24),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
